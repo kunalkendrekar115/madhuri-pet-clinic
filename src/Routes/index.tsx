@@ -12,6 +12,7 @@ import App from '../App';
 import Login from '../Login';
 import Expenses from '../Expenses/index';
 import AddExpence from '../Expenses/AddExpense/index';
+import ViewDocument from '../ViewDocument/index';
 
 const Routes = () => {
 
@@ -37,6 +38,10 @@ const Routes = () => {
                     element: <AddRecord />,
                 },
                 {
+                    path: "/edit",
+                    element: <AddRecord />,
+                },
+                {
                     path: "/view/:id",
                     element: <ViewRecords />,
                 },
@@ -47,6 +52,10 @@ const Routes = () => {
                 {
                     path: "/add-expence",
                     element: <AddExpence />,
+                },
+                {
+                    path: "/view-pdf",
+                    element: <ViewDocument />,
                 },
             ]
         }

@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useParams } from "react-router-dom";
 import { deleteRecord, getRecordsById } from "../../api";
 import { AppContext } from '../../AppContext';
+import { generateCard } from '../../utils/generate-card';
 
 type IRecord = {
     id: string,
@@ -15,8 +16,11 @@ type IRecord = {
     ownerName: string,
     mobileNumber: string,
     petName: string,
+    gender: string,
     petNameType: string,
     species: string,
+    weight: string,
+    age: string,
     breed: string
     history: string,
     treatment: string,
@@ -34,15 +38,28 @@ const ViewRecords = () => {
     const { id } = useParams<IParam>()
     const [record, setRecord] = useState<IRecord | null>()
     const [loading, setLoading] = useState(false);
+    const [loadingCard, setLoadingCard] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
-    const { getRecordById } = useContext(AppContext)
+    const { getRecordById, setSearchRecord } = useContext(AppContext)
 
     const navigate = useNavigate()
 
     useEffect(() => {
         setRecord(getRecordById(id));
     }, [id])
+
+    const handleViewCard = async () => {
+        try {
+            setLoadingCard(true)
+            await generateCard(record)
+        } catch (error) {
+            console.log(error)
+        }
+        finally {
+            setLoadingCard(false)
+        }
+    }
 
     const handleDeleteRecord = async () => {
         if (!record) return;
@@ -58,6 +75,15 @@ const ViewRecords = () => {
         setDeleteLoading(false)
     }
 
+    const handlUpdate = () => {
+        setSearchRecord(record);
+        navigate('/edit');
+    }
+
+    const handleAddNew = () => {
+        setSearchRecord(record);
+        navigate('/addrecord');
+    }
 
     const renderRecord = (key: string, value: any, isEven: boolean) => (
         <Flex justify="space-between" w="100%" bg={isEven ? "blue.50" : "white"} alignItems="center" paddingY="12px" paddingX="16px">
@@ -77,19 +103,38 @@ const ViewRecords = () => {
                     {renderRecord("Address", record.address, false)}
                     {renderRecord("Pet Name", record.petName || record.petNameType, true)}
                     {renderRecord("Species", record.species, false)}
-                    {renderRecord("breed", record.breed, true)}
-                    {renderRecord("history", record.history, false)}
-                    {renderRecord("Treatment", record.treatment, true)}
-                    {renderRecord("Description", record.treatmentDescription, false)}
-                    {renderRecord("Fees", (<><span>&#8377;</span> {record.fees}</>), true)}
-                    {renderRecord("Paid Amount", (<><span>&#8377;</span>{` ${record.paidAmount}`}</>), false)}
-                    {renderRecord("Remaining Amount", (<><span>&#8377;</span>{record.remainingAmount || 0}</>), true)}
+                    {renderRecord("Gender", record.gender, true)}
+                    {renderRecord("breed", record.breed, false)}
+                    {renderRecord("Weight", record.weight, true)}
+                    {renderRecord("Age", record.age, false)}
+                    {renderRecord("history", record.history, true)}
+                    {renderRecord("Treatment", record.treatment, false)}
+                    {renderRecord("Description", record.treatmentDescription, true)}
+                    {renderRecord("Fees", (<><span>&#8377;</span> {record.fees}</>), false)}
+                    {renderRecord("Paid Amount", (<><span>&#8377;</span>{` ${record.paidAmount}`}</>), true)}
+                    {renderRecord("Remaining Amount", (<><span>&#8377;</span>{record.remainingAmount || 0}</>), false)}
 
-                    <Flex justify="space-evenly" mt="20px">
+                    <Flex justify="space-evenly" mt="20px" flexWrap="wrap" gap={5}>
+
                         <Button colorScheme='teal'
                             size='md'
                             w="30%"
-                            onClick={() => { }}>
+                            onClick={handleAddNew}>
+                            Add New
+                        </Button>
+
+                        <Button colorScheme='teal'
+                            size='md'
+                            w="30%"
+                            isLoading={loadingCard}
+                            onClick={handleViewCard}>
+                            View Card
+                        </Button>
+
+                        <Button colorScheme='teal'
+                            size='md'
+                            w="30%"
+                            onClick={handlUpdate}>
                             Edit
                         </Button>
 

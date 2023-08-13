@@ -13,7 +13,9 @@ const Menu = () => {
         setSelectedMonth,
         setExpenses,
         setTotalExpenses,
-        setSelectedMonthExpense
+        setSelectedMonthExpense,
+        setSearchQuery,
+        setSearchRecord
     } = useContext(AppContext);
 
     useEffect(() => {
@@ -24,6 +26,8 @@ const Menu = () => {
         setTotalEarnings(null)
         setTotalEarnings(null);
         setTotalExpenses(null);
+        setSearchQuery('')
+        setSearchRecord({});
     }, [])
 
     return (<Stack spacing={16} direction='column' align='center' mt="20px">

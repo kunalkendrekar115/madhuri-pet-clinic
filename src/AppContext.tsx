@@ -13,7 +13,11 @@ interface IContext {
     totalExpenses?: any
     setTotalEarnings?: any
     setTotalExpenses?: any,
-    getRecordById?: any
+    getRecordById?: any,
+    searchRecord?: any,
+    setSearchRecord?: any,
+    searchQuery?: any,
+    setSearchQuery?: any
 }
 
 export const AppContext = React.createContext<IContext>({})

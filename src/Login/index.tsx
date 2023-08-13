@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { useState } from 'react';
 
 import { setCookie } from "../utils/cookies";
-import { authenticate } from '../api';
+import { authenticate, getTreatments } from '../api';
 
 const Login = () => {
 
@@ -18,8 +18,9 @@ const Login = () => {
         setLoading(true)
         try {
             const { data } = await authenticate({ password: value });
-
             setCookie(data.token, 7);
+            const { data: { avlTreatments } } = await getTreatments();
+            localStorage.setItem("avlTreatments", JSON.stringify(avlTreatments));
             setLoading(false);
             navigate("/")
 

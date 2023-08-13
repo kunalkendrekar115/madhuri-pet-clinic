@@ -12,9 +12,10 @@ import "./App.css";
 function App() {
 
   const [records, setRecords] = useState([])
+  const [searchRecord, setSearchRecord] = useState({})
   const [totalEarnings, setTotalEarnings] = useState(0)
   const [selectedMonth, setSelectedMonth] = useState<any>()
-
+  const [searchQuery, setSearchQuery] = useState('')
   const [expenses, setExpenses] = useState([])
   const [totalExpenses, setTotalExpenses] = useState(0)
   const [selectedMonthExpense, setSelectedMonthExpense] = useState<any>()
@@ -42,7 +43,11 @@ function App() {
     expenses,
     totalExpenses,
     selectedMonthExpense,
+    searchRecord,
+    searchQuery,
     setRecords: (records: any) => setRecords(records),
+    setSearchRecord: (record: any) => setSearchRecord(record),
+    setSearchQuery: (number: any) => setSearchQuery(number),
     getRecordById: (id: string) => getRecordById(id),
     setSelectedMonth: (selectedMonth: any) => setSelectedMonth(selectedMonth),
     setTotalEarnings: (totalEarnings: any) => setTotalEarnings(totalEarnings),
