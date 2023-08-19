@@ -7,28 +7,18 @@ import {
     ModalFooter,
     ModalBody,
     ModalCloseButton,
-    Table,
-    Thead,
-    Tbody,
-    Tr,
-    Th,
-    Td,
-    Input,
-    TableContainer,
-    Checkbox,
-    Flex,
     Box,
-    Text
 } from '@chakra-ui/react'
 import { Formik, useFormikContext } from 'formik'
 import { useState } from "react"
-import { saveTreatment } from '../../api'
+import { saveTreatment } from '../../../api'
 import moment from 'moment'
+import { TreatmentsTable } from './TreatmentsTable'
 
 const standerdUnits: any = {
     Injection: "ml",
-    "Deworming (Liquid)": "ml",
     "Deworming (Tablet)": "Tablet",
+    "Tablets": "Tablet",
     Vaccination: "NA",
 }
 
@@ -40,12 +30,12 @@ const TreatmentModal = ({ isOpen, onClose }: any) => {
     avlTreatments = avlTreatments ? JSON.parse(avlTreatments) : [];
     const allStoredTreatments = [...avlTreatments];
     avlTreatments = avlTreatments.filter(({ type }: any) => type === treatmentType)
-    const [newTreatment, setNewTreatment] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
     const isDueDate = ['Vaccination', 'Deworming (Liquid)', 'Deworming (Tablet)'].includes(treatmentType);
     const noUnit = ['Vaccination'].includes(treatmentType);
 
+    const qtyDisplay = `Quantity${standerdUnits[treatmentType] ? ` (${standerdUnits[treatmentType]})` : ''}`;
 
     const getTypePrefix = (type = '') => {
         if (!type || ['General Checkup', 'Other'].includes(type)) return '';
@@ -53,8 +43,14 @@ const TreatmentModal = ({ isOpen, onClose }: any) => {
     }
 
     const getItemDisplay = (item: any) => {
-        let display = `${getTypePrefix(item.type)}${item.name} ${item.value ? `${item.value} ${item.unit || ''}` : ""}`
+
+        let unit = standerdUnits[treatmentType] || ''
+
+        if (unit && ['Deworming (Tablet)', 'Tablets'].includes(treatmentType) && !isNaN(item.value) && +item.value > 1) unit = `${unit}s`
+
+        let display = `${getTypePrefix(item.type)}${item.name} ${item.value ? `${item.value} ${unit}` : ""}`
         if (item.dueDate) display = `${display}#${moment(new Date(item.dueDate)).format("DD MMM yyyy")}`
+
         return display;
     }
     const handleSubmit = ({ avlTreatments }: any) => {
@@ -66,60 +62,21 @@ const TreatmentModal = ({ isOpen, onClose }: any) => {
         onClose();
     }
 
-    const addNewTreatment = async (setFieldValue: any, { avlTreatments = [] }: any) => {
+    const addNewTreatment = async (setFieldValue: any, { avlTreatments = [] }: any, treatmentName: string) => {
         try {
-            const newTreatmentObj: any = { name: newTreatment, type: treatmentType, unit: standerdUnits[treatmentType] || '' };
+            const newTreatmentObj: any = { name: treatmentName, type: treatmentType, unit: standerdUnits[treatmentType] || '' };
             const newAvlTreatments = [newTreatmentObj, ...allStoredTreatments]
             setLoading(true);
 
             await saveTreatment(newTreatmentObj);
 
             setFieldValue("avlTreatments", [newTreatmentObj, ...avlTreatments]);
-            setNewTreatment('');
             localStorage.setItem('avlTreatments', JSON.stringify(newAvlTreatments))
         } catch (error) { console.log(error) }
         finally {
             setLoading(false)
         }
     }
-
-    const renderTreatmentTable = ({ values, setFieldValue }: any) => {
-        return (
-            <>
-                <Flex justify="space-between" align="flex-end" gap="20px" mb="16px">
-                    <Input placeholder="Add New Treatment" value={newTreatment} onChange={(e) => setNewTreatment(e.target.value)} />
-                    <Button disabled={!newTreatment} onClick={() => addNewTreatment(setFieldValue, values)} isLoading={loading}>+</Button>
-                </Flex>
-                <TableContainer>
-                    <Table maxWidth="100%" overflowY={'hidden'}>
-                        <Thead position="sticky" top={0} zIndex="docked">
-                            <Tr >
-                                <Th></Th>
-                                <Th>Name</Th>
-                                {!noUnit && <Th>Quantity</Th>}
-                                {isDueDate && <Th>Due Date</Th>}
-                            </Tr>
-                        </Thead>
-                        <Tbody>
-                            {
-                                values.avlTreatments.map((item: any, index: any) => (
-                                    <Tr key={`${item.name}-${index}`}>
-                                        <Td><Checkbox onChange={(e) => setFieldValue(`avlTreatments[${index}].checked`, e.target.checked)} /></Td>
-                                        <Td><Text width="100px" isTruncated>{item.name}</Text></Td>
-                                        {!noUnit && <Td> <Input disabled={!item.checked} placeholder={`0 ${standerdUnits[treatmentType] || ''}`} value={avlTreatments[index].value} onChange={(e) => setFieldValue(`avlTreatments[${index}].value`, e.target.value)} /> </Td>}
-                                        {isDueDate && <Td> <Input type="date" disabled={!item.checked} value={avlTreatments[index].dueDate} onChange={(e) => setFieldValue(`avlTreatments[${index}].dueDate`, e.target.value)} /> </Td>}
-                                    </Tr>
-                                ))
-
-                            }
-                        </Tbody>
-
-                    </Table>
-                </TableContainer>
-            </>
-        )
-    }
-
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl">
@@ -130,7 +87,15 @@ const TreatmentModal = ({ isOpen, onClose }: any) => {
                         <ModalHeader>{treatmentType}</ModalHeader>
                         <ModalCloseButton />
                         <ModalBody>
-                            <Box mt="20px" boxSizing="border-box" overflowY="auto">  {renderTreatmentTable(props)} </Box>
+                            <Box mt="20px" boxSizing="border-box" overflowY="auto">
+                                <TreatmentsTable
+                                    addNewTreatment={addNewTreatment}
+                                    noUnit={noUnit}
+                                    qtyDisplay={qtyDisplay}
+                                    isDueDate={isDueDate}
+                                    loading={loading}
+                                    avlTreatments={avlTreatments} />
+                            </Box>
                         </ModalBody>
 
                         <ModalFooter>

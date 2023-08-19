@@ -17,7 +17,7 @@ export function generateCard(record: any) {
                 dueDate = typeValue[1];
 
             return {
-                name: typeValue[0],
+                name: typeValue[0].trim(),
                 dateGiven: moment(new Date(record.date)).format("DD MMM yyyy"),
                 dueDate
             }
@@ -49,6 +49,9 @@ export function generateCard(record: any) {
                 address: record.address,
                 ownerInfo: `${record.ownerName}, ${record.address}`,
                 petName: record.petName,
+                weight: record.weight,
+                age: record.age,
+                color: record.color,
                 species: record.species,
                 breed: record.breed,
                 sex: record.gender,
@@ -62,7 +65,7 @@ export function generateCard(record: any) {
 
             var config = {
                 method: 'post',
-                url: 'https://70npplrfkg.execute-api.us-east-1.amazonaws.com/develop/Madhuri-Pet-Clinic-PDF-Generator-dev-generate-pdf',
+                url: 'https://wpxz57lyrc.execute-api.us-east-1.amazonaws.com/dev/generate-pdf',
                 headers: {
                     'Content-Type': 'application/json'
                 },

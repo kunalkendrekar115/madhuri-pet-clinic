@@ -8,8 +8,8 @@ import * as Yup from 'yup';
 import FormField from '../../utils/FormField';
 import { saveRecords } from '../../api';
 import { Flex } from '@chakra-ui/react';
-import TreatmentModal from './TreatmentModal';
-import HistoryObservedModal from './HistoryObservedModal';
+import TreatmentModal from './TreatmentsModal/TreatmentModal';
+import HistoryObservedModal from './HistoryObservedModal/HistoryObservedModal';
 import { generatePrescription } from '../../utils/generate-prescription';
 import { AppContext } from '../../AppContext';
 import { updateRecord } from '../../api/index';
@@ -32,6 +32,7 @@ const AddRecord = () => {
         address: searchRecord.address || "",
         species: searchRecord.species || "",
         breed: searchRecord.breed || "",
+        color: searchRecord.color || "",
         weight: searchRecord.weight || "",
         age: searchRecord.age || "",
         gender: searchRecord.gender || "",
@@ -172,6 +173,7 @@ const AddRecord = () => {
                             type="select"
                             options={["Dog", "Cat", "Rabbit", "Bird", "Turtle", "Other"]} />
                         <FormField name="breed" placeholder="Breed" />
+                        <FormField name="color" placeholder="Color" />
                         <FormField name="weight" placeholder="Weight (KG)" />
                         <FormField name="age" placeholder="Age" />
                         {!isEditMode && <>
@@ -208,8 +210,8 @@ const AddRecord = () => {
 
                         {!isEditMode && <FormField name="followupDate" placeholder="Followup Date" type="date" />}
 
-                        {!isEditMode && <Flex justify="space-between" align="flex-end" gap="20px" mt="20px">
-                            <FormLabel>Send Prescription to Whatsapp</FormLabel>
+                        {!isEditMode && <Flex justify="space-between" align="center" gap="20px" mt="20px">
+                            <FormLabel>Digital Prescription</FormLabel>
                             {renderRadio(['Yes', 'No'], 'whatsapp', props.setFieldValue, props.values.whatsapp)}
                         </Flex>
                         }

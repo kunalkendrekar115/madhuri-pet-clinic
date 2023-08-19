@@ -21,6 +21,7 @@ import { Formik, useFormikContext } from 'formik'
 import { Box } from '@chakra-ui/react';
 import { useState } from "react";
 import { Flex } from '@chakra-ui/react';
+import { HistoryObservedTable } from './HistoryObservedTable';
 
 const HistoryObservedModal = ({ isOpen, onClose }: any) => {
 
@@ -42,42 +43,10 @@ const HistoryObservedModal = ({ isOpen, onClose }: any) => {
         onClose();
     }
 
-    const renderHistoryObservedTable = ({ values, setFieldValue }: any) => {
-        return (
-            <>
-                <Flex justify="space-between" align="flex-end" gap="20px" mb="16px">
-                    <Input placeholder="Add History Observed" value={history} onChange={(e) => setHistory(e.target.value)} />
-                    <Button disabled={!history} onClick={() => {
-                        setFieldValue("avlHistory", [{ name: history }, ...values.avlHistory])
-                        setHistory('');
-                    }}>+</Button>
-                </Flex>
-                <TableContainer>
-                    <Table>
-                        <Thead position="sticky" top={0} zIndex="docked">
-                            <Tr >
-                                <Th></Th>
-                                <Th>Select History Observed</Th>
-                            </Tr>
-                        </Thead>
-                        <Tbody>
-                            {values &&
-                                values.avlHistory.map((item: any, index: any) => (
-                                    <Tr key={`${item.name}-${index}`}>
-                                        <Td width="3%"><Checkbox onChange={(e) => setFieldValue(`avlHistory[${index}].checked`, e.target.checked)} /></Td>
-                                        <Td>{item.name}</Td>
-                                    </Tr>
-                                ))
 
-                            }
-                        </Tbody>
-
-                    </Table>
-                </TableContainer>
-            </>
-        )
+    const addNewHistory = (setFieldValue: any, values: any, history: string) => {
+        setFieldValue("avlHistory", [{ name: history }, ...values.avlHistory])
     }
-
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
@@ -88,7 +57,11 @@ const HistoryObservedModal = ({ isOpen, onClose }: any) => {
                         <ModalHeader>History Observed</ModalHeader>
                         <ModalCloseButton />
                         <ModalBody>
-                            <Box boxSizing="border-box" overflowY="auto">  {renderHistoryObservedTable(props)} </Box>
+                            <Box boxSizing="border-box" overflowY="auto">
+                                <HistoryObservedTable
+                                    addNewHistory={addNewHistory}
+                                />
+                            </Box>
                         </ModalBody>
 
                         <ModalFooter>

@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import { deleteRecord, getRecordsById } from "../../api";
 import { AppContext } from '../../AppContext';
 import { generateCard } from '../../utils/generate-card';
+import { generatePrescription } from '../../utils/generate-prescription';
 
 type IRecord = {
     id: string,
@@ -39,6 +40,7 @@ const ViewRecords = () => {
     const [record, setRecord] = useState<IRecord | null>()
     const [loading, setLoading] = useState(false);
     const [loadingCard, setLoadingCard] = useState(false);
+    const [loadingPrescription, setLoadingPrescription] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
     const { getRecordById, setSearchRecord } = useContext(AppContext)
@@ -52,12 +54,26 @@ const ViewRecords = () => {
     const handleViewCard = async () => {
         try {
             setLoadingCard(true)
-            await generateCard(record)
+            const pdfUrl = await generateCard(record)
+            const url = `/view-pdf?pdfUrl=${pdfUrl}&mobile=${record?.mobileNumber}&ownerName=${record?.ownerName}&petName=${record?.petName}&type=Vaccination Card`;
+            navigate(url)
         } catch (error) {
             console.log(error)
         }
         finally {
             setLoadingCard(false)
+        }
+    }
+
+    const handlePrescription = async () => {
+        try {
+            setLoadingPrescription(true)
+            const pdfUrl = await generatePrescription(record)
+            const url = `/view-pdf?pdfUrl=${pdfUrl}&mobile=${record?.mobileNumber}&ownerName=${record?.ownerName}&petName=${record?.petName}`;
+            navigate(url)
+        } catch (error: any) { alert(error.toString()) }
+        finally {
+            setLoadingPrescription(false)
         }
     }
 
@@ -122,6 +138,15 @@ const ViewRecords = () => {
                             onClick={handleAddNew}>
                             Add New
                         </Button>
+
+                        <Button colorScheme='teal'
+                            size='md'
+                            w="30%"
+                            isLoading={loadingPrescription}
+                            onClick={handlePrescription}>
+                            Prescription
+                        </Button>
+
 
                         <Button colorScheme='teal'
                             size='md'
