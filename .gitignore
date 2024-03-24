@@ -23,6 +23,5 @@ utils/send-message.ts
 *.njsproj
 *.sln
 *.sw?
-.env.dev
-.env.prod
+.env.*
 
