@@ -24,6 +24,10 @@ export const TreatmentsTable = ({ addNewTreatment, noUnit, qtyDisplay, isDueDate
     const { values, setFieldValue }: any = useFormikContext();
     const [treatmentItems, setTreatmentItems] = useState([])
 
+    const getItemIndex = (name: any) => {
+        return avlTreatments.findIndex((item: any) => item.name === name)
+    }
+
     useEffect(() => {
         if (inputValue) {
             const filterItems = values.avlTreatments.filter((item: any) => item.name.toUpperCase().includes(inputValue.toUpperCase()))
@@ -38,6 +42,19 @@ export const TreatmentsTable = ({ addNewTreatment, noUnit, qtyDisplay, isDueDate
         setInputValue('')
     }
 
+    const renderRow = (item: any) => {
+        const index = getItemIndex(item.name);
+
+        return (
+            <Tr key={`${item.name}-${index}`}>
+                <Td><Checkbox onChange={(e) => setFieldValue(`avlTreatments[${index}].checked`, e.target.checked)} /></Td>
+                <Td><Text width="100px" isTruncated>{item.name}</Text></Td>
+                {!noUnit && <Td> <Input disabled={!item.checked} placeholder="0" value={avlTreatments[index].value} onChange={(e) => setFieldValue(`avlTreatments[${index}].value`, e.target.value)} /> </Td>}
+                {isDueDate && <Td> <Input type="date" disabled={!item.checked} value={avlTreatments[index].dueDate} onChange={(e) => setFieldValue(`avlTreatments[${index}].dueDate`, e.target.value)} /> </Td>}
+            </Tr>
+        )
+    }
+
     return (
         <>
             <Flex justify="space-between" align="flex-end" gap="20px" mb="16px">
@@ -48,7 +65,7 @@ export const TreatmentsTable = ({ addNewTreatment, noUnit, qtyDisplay, isDueDate
                             <CloseIcon onClick={handleClearInput} />
                         </InputRightElement>}
                 </InputGroup>
-                <Button disabled={!inputValue && treatmentItems.length > 0} onClick={() => addNewTreatment(setFieldValue, values, inputValue)} isLoading={loading} > +</Button >
+                <Button disabled={!inputValue && treatmentItems.length === 0} onClick={() => addNewTreatment(setFieldValue, values, inputValue)} isLoading={loading} > +</Button >
             </Flex >
             <TableContainer height="50vh" overflowY="auto">
                 <Table maxWidth="100%">
@@ -62,14 +79,7 @@ export const TreatmentsTable = ({ addNewTreatment, noUnit, qtyDisplay, isDueDate
                     </Thead>
                     <Tbody>
                         {
-                            treatmentItems.map((item: any, index: any) => (
-                                <Tr key={`${item.name}-${index}`}>
-                                    <Td><Checkbox onChange={(e) => setFieldValue(`avlTreatments[${index}].checked`, e.target.checked)} /></Td>
-                                    <Td><Text width="100px" isTruncated>{item.name}</Text></Td>
-                                    {!noUnit && <Td> <Input disabled={!item.checked} placeholder="0" value={avlTreatments[index].value} onChange={(e) => setFieldValue(`avlTreatments[${index}].value`, e.target.value)} /> </Td>}
-                                    {isDueDate && <Td> <Input type="date" disabled={!item.checked} value={avlTreatments[index].dueDate} onChange={(e) => setFieldValue(`avlTreatments[${index}].dueDate`, e.target.value)} /> </Td>}
-                                </Tr>
-                            ))
+                            treatmentItems.map(renderRow)
 
                         }
                     </Tbody>

@@ -11,6 +11,7 @@ export function generateCard(record: any) {
 
         const formattedTreatments = typeTreatments.map((item: any) => {
             const splitValues = item.split(':');
+            console.log(splitValues);
             const typeValue = splitValues[1].split('#')
             let dueDate = '-'
             if (typeValue.length > 1)
@@ -25,6 +26,11 @@ export function generateCard(record: any) {
 
         return formattedTreatments
     }
+
+    const sortByDateGiven = (a: any, b: any) => {
+        return new Date(a.dateGiven).getTime() - new Date(b.dateGiven).getTime()
+    }
+
     return new Promise(async (resolve, reject) => {
         try {
 
@@ -38,11 +44,11 @@ export function generateCard(record: any) {
             const vaccinations = cardRecords.filter(({ treatment }: any) => treatment.includes('Vaccination'))
                 .reduce((acc: any, item: any) => {
                     return [...acc, ...formatTreatment(item, 'Vaccination')]
-                }, [])
+                }, []).sort(sortByDateGiven)
 
             const dewormings = cardRecords.filter(({ treatment }: any) => treatment.includes('Deworming')).reduce((acc: any, item: any) => {
                 return [...acc, ...formatTreatment(item, 'Deworming')]
-            }, [])
+            }, []).sort(sortByDateGiven);
 
             var body = JSON.stringify({
                 ownerName: record.ownerName,
@@ -52,6 +58,7 @@ export function generateCard(record: any) {
                 weight: record.weight,
                 age: record.age,
                 color: record.color,
+                fileDate: moment(new Date(record.date)).format("DD-MMM-yyyy"),
                 species: record.species,
                 breed: record.breed,
                 sex: record.gender,

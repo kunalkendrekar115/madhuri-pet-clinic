@@ -40,6 +40,16 @@ export const HistoryObservedTable = ({ addNewHistory }: any) => {
         setInputValue('')
     }
 
+    const renderRow = (item: any) => {
+        const index = values.avlHistory.findIndex((history: any) => history.name === item.name)
+        return (
+            <Tr key={`${item.name}-${index}`}>
+                <Td width="3%"><Checkbox onChange={(e) => setFieldValue(`avlHistory[${index}].checked`, e.target.checked)} /></Td>
+                <Td>{item.name}</Td>
+            </Tr>
+        )
+    }
+
     return (
         <>
             <Flex justify="space-between" align="flex-end" gap="20px" mb="16px">
@@ -50,7 +60,7 @@ export const HistoryObservedTable = ({ addNewHistory }: any) => {
                             <CloseIcon onClick={handleClearInput} />
                         </InputRightElement>}
                 </InputGroup>
-                <Button disabled={!inputValue && historyItems.length > 0} onClick={() => addNewHistory(setFieldValue, values, inputValue)}  > +</Button >
+                <Button disabled={!inputValue && historyItems.length === 0} onClick={() => addNewHistory(setFieldValue, values, inputValue)}  > +</Button >
             </Flex >
             <TableContainer height="50vh" overflowY="auto">
                 <Table>
@@ -61,12 +71,7 @@ export const HistoryObservedTable = ({ addNewHistory }: any) => {
                         </Tr>
                     </Thead>
                     <Tbody>
-                        {historyItems.map((item: any, index: any) => (
-                            <Tr key={`${item.name}-${index}`}>
-                                <Td width="3%"><Checkbox onChange={(e) => setFieldValue(`avlHistory[${index}].checked`, e.target.checked)} /></Td>
-                                <Td>{item.name}</Td>
-                            </Tr>
-                        ))
+                        {historyItems.map(renderRow)
 
                         }
                     </Tbody>

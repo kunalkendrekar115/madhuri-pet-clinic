@@ -59,6 +59,16 @@ const TreatmentModal = ({ isOpen, onClose }: any) => {
         const treatmentItems = [...prevItems, ...selectedItems]
         recordForm.setFieldValue("treatmentItems", treatmentItems)
         console.log(treatmentItems);
+
+        const followupDates = treatmentItems.filter(({ dueDate }: any) => dueDate).sort((a: any, b: any) => {
+            return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+        })
+
+        if (followupDates?.length) {
+            recordForm.setFieldValue('followupDate', followupDates[0].dueDate)
+            recordForm.setFieldValue('followupFor', `${followupDates[0].type}`)
+        }
+
         onClose();
     }
 

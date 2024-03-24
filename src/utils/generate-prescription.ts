@@ -29,6 +29,7 @@ export function generatePrescription(record: any) {
                 color: record.color,
                 age: record.age,
                 sex: record.gender,
+                fileDate: moment(new Date(record.date)).format("DD-MMM-yyyy"),
                 date: moment(new Date(record.date)).format("DD MMM yyyy"),
                 followupDate: record.followupDate ? moment(new Date(record.followupDate)).format("DD MMM yyyy") : "",
                 historyObserved: record.history,

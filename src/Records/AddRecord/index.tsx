@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { Form, Formik } from 'formik';
 import { useNavigate, useLocation } from 'react-router-dom';
 import * as Yup from 'yup';
-
+import moment from 'moment'
 import FormField from '../../utils/FormField';
 import { saveRecords } from '../../api';
 import { Flex } from '@chakra-ui/react';
@@ -13,6 +13,7 @@ import HistoryObservedModal from './HistoryObservedModal/HistoryObservedModal';
 import { generatePrescription } from '../../utils/generate-prescription';
 import { AppContext } from '../../AppContext';
 import { updateRecord } from '../../api/index';
+import { generateCard } from '../../utils/generate-card';
 
 const AddRecord = () => {
 
@@ -36,15 +37,17 @@ const AddRecord = () => {
         weight: searchRecord.weight || "",
         age: searchRecord.age || "",
         gender: searchRecord.gender || "",
-        mobileNumber: searchRecord.mobileNumber || "",
+        mobileNumber: +searchRecord.mobileNumber || "",
         paidAmount: isEditMode ? searchRecord.paidAmount : "",
         date: isEditMode ? searchRecord.date : "",
         fees: isEditMode ? searchRecord.fees : "",
-        whatsapp: "No",
+        followupDate: isEditMode && searchRecord.followupDate && searchRecord.followupDate !== '-' ? moment(searchRecord.followupDate).format('yyyy-MM-DD') : "",
+        digitalPrescription: "No",
+        digitalCard: "No",
         remainingAmount: isEditMode ? searchRecord.remainingAmount : "",
         treatment: isEditMode ? searchRecord.treatment : "",
         treatmentDescription: isEditMode ? searchRecord.treatmentDescription : "",
-        reference: isEditMode ? searchRecord.reference : "",
+        reference: isEditMode ? searchRecord.reference : "Self",
         treatmentItems: [],
         history: []
     }
@@ -65,36 +68,37 @@ const AddRecord = () => {
             .max(50, 'Too Long!')
             .required('Required'),
         treatment: Yup.string(),
-        reference: Yup.string()
-            .required('Required'),
         date: Yup.string().required("Required"),
         fees: Yup.number(),
-        paidAmount: Yup.number()
+        paidAmount: Yup.number(),
+        mobileNumber: Yup.number().test('len', 'Must be exactly 10 digit', (val: any) => val ? val.toString().length === 10 : true)
 
     });
 
     const handleSubmit = async (values: any, actions: any) => {
-        console.log(values)
         try {
             const body = { ...values }
             body.date = new Date(values.date).toISOString()
             body.fees = +values.fees
+            body.ownerName = values.ownerName.trim()
+            body.petName = values.petName.trim()
             body.paidAmount = +values.paidAmount
             body.remainingAmount = +values.remainingAmount
             body.mobileNumber = values.mobileNumber ? +values.mobileNumber : 0
             body.history = values.history.map(({ name }: any) => name).join(", ");
-            if (values.treatmentItems.length)
+            body.followupDate = values.followupDate ? new Date(values.followupDate).toISOString() : '-'
+            if (values.treatmentItems.length) {
                 body.treatment = values.treatmentItems.map(({ display }: any) => display.trim()).join(",")
-
+            }
             delete body.treatmentItems
-            delete body.whatsapp
+            // delete body.digitalPrescription
+            // delete body.digitalCard
             console.log(body)
 
             if (!isEditMode) {
                 await saveRecords(body)
             } else {
                 delete body.date
-                delete body.followupDate
                 delete body.treatment
                 delete body.history
                 delete body.treatmentDescription
@@ -103,13 +107,22 @@ const AddRecord = () => {
                 await updateRecord(searchRecord.id, searchRecord.date, body)
             }
 
-            if (values.whatsapp === "Yes") {
+            if (values.digitalPrescription === "Yes") {
                 try {
                     const pdfUrl = await generatePrescription(body)
                     const url = `/view-pdf?pdfUrl=${pdfUrl}&mobile=${body.mobileNumber}&ownerName=${body.ownerName}&petName=${body.petName}`;
                     navigate(url)
                 } catch (error: any) { alert(error.toString()) }
-            } else { navigate("/") }
+            } else if (values.digitalCard === "Yes") {
+                try {
+                    const pdfUrl = await generateCard(body)
+                    const followupDate = body.followupDate && body.followupDate !== '-' ? moment(body.followupDate).format('DD MMM yyyy') : ''
+                    const url = `/view-pdf?pdfUrl=${pdfUrl}&mobile=${body.mobileNumber}&ownerName=${body.ownerName}&petName=${body.petName}&type=Vaccination Card&followupFor=${body.followupFor}&followupDate=${followupDate}`;
+                    navigate(url)
+                } catch (error: any) { alert(error.toString()) }
+            }
+
+            else { navigate("/") }
 
         } catch (error: any) {
             console.log(error)
@@ -206,18 +219,24 @@ const AddRecord = () => {
                         <FormField name="remainingAmount" placeholder="Remaining Amount" type="number" />
                         <Divider />
 
-                        {!isEditMode && <FormField name="reference" placeholder="Reference" type="select" options={["Self", "MaxSophie"]} />}
+                        {/* {!isEditMode && <FormField name="reference" placeholder="Reference" type="select" options={["Self", "MaxSophie"]} />} */}
 
-                        {!isEditMode && <FormField name="followupDate" placeholder="Followup Date" type="date" />}
+                        <FormField name="followupDate" placeholder="Followup Date" type="date" />
+
+                        {!isEditMode && <FormField name="followupFor" placeholder="Followup For" type="text" />}
 
                         {!isEditMode && <Flex justify="space-between" align="center" gap="20px" mt="20px">
                             <FormLabel>Digital Prescription</FormLabel>
-                            {renderRadio(['Yes', 'No'], 'whatsapp', props.setFieldValue, props.values.whatsapp)}
+                            {renderRadio(['Yes', 'No'], 'digitalPrescription', props.setFieldValue, props.values.digitalPrescription)}
+                        </Flex>
+                        }
+
+                        {!isEditMode && <Flex justify="space-between" align="center" gap="20px" mt="20px">
+                            <FormLabel>Digital Card</FormLabel>
+                            {renderRadio(['Yes', 'No'], 'digitalCard', props.setFieldValue, props.values.digitalCard)}
                         </Flex>
                         }
                     </Box>
-
-
 
                     <Button
                         mt={8}

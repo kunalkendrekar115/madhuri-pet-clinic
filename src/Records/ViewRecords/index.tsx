@@ -8,6 +8,7 @@ import { deleteRecord, getRecordsById } from "../../api";
 import { AppContext } from '../../AppContext';
 import { generateCard } from '../../utils/generate-card';
 import { generatePrescription } from '../../utils/generate-prescription';
+import { askRatingsOnWhatsApp } from "../../utils/send-message";
 
 type IRecord = {
     id: string,
@@ -27,7 +28,11 @@ type IRecord = {
     treatment: string,
     treatmentDescription: string,
     paidAmount: number,
-    remainingAmount: number
+    remainingAmount: number,
+    digitalPrescription: string,
+    digitalCard: string,
+    followupFor: string,
+    followupDate: string
 }
 
 
@@ -40,6 +45,7 @@ const ViewRecords = () => {
     const [record, setRecord] = useState<IRecord | null>()
     const [loading, setLoading] = useState(false);
     const [loadingCard, setLoadingCard] = useState(false);
+    const [loadingRatings, setLoadingRatings] = useState(false);
     const [loadingPrescription, setLoadingPrescription] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
@@ -51,11 +57,32 @@ const ViewRecords = () => {
         setRecord(getRecordById(id));
     }, [id])
 
+    const handleAskRatings = async () => {
+
+        try {
+            setLoadingRatings(true)
+            await askRatingsOnWhatsApp(record?.ownerName, record?.mobileNumber);
+            alert("success");
+        } catch (error) { alert(error) }
+        finally {
+            setLoadingRatings(false)
+        }
+    }
+
+
     const handleViewCard = async () => {
         try {
-            setLoadingCard(true)
-            const pdfUrl = await generateCard(record)
-            const url = `/view-pdf?pdfUrl=${pdfUrl}&mobile=${record?.mobileNumber}&ownerName=${record?.ownerName}&petName=${record?.petName}&type=Vaccination Card`;
+            let pdfUrl: any = ''
+
+            if (record?.digitalCard === "Yes") {
+                const fileDate = moment(new Date(record.date)).format("DD-MMM-yyyy")
+                pdfUrl = `https://pet-clinic-pdfs.s3.amazonaws.com/${record.petName}-card-${fileDate}.pdf`
+            } else {
+                setLoadingCard(true)
+                pdfUrl = await generateCard(record)
+            }
+
+            const url = `/view-pdf?pdfUrl=${pdfUrl}&mobile=${record?.mobileNumber}&ownerName=${record?.ownerName}&petName=${record?.petName}&type=Vaccination Card&followupFor=${record?.followupFor}&followupDate=${record?.followupDate}`;
             navigate(url)
         } catch (error) {
             console.log(error)
@@ -67,9 +94,15 @@ const ViewRecords = () => {
 
     const handlePrescription = async () => {
         try {
-            setLoadingPrescription(true)
-            const pdfUrl = await generatePrescription(record)
-            const url = `/view-pdf?pdfUrl=${pdfUrl}&mobile=${record?.mobileNumber}&ownerName=${record?.ownerName}&petName=${record?.petName}`;
+            let pdfUrl: any = ''
+            if (record?.digitalPrescription === "Yes") {
+                const fileDate = moment(new Date(record.date)).format("DD-MMM-yyyy")
+                pdfUrl = `https://pet-clinic-pdfs.s3.amazonaws.com/${record.petName}-prescription-${fileDate}.pdf`
+            } else {
+                setLoadingPrescription(true)
+                pdfUrl = await generatePrescription(record)
+            }
+            const url = `/view-pdf?pdfUrl=${pdfUrl}&mobile=${record?.mobileNumber}&ownerName=${record?.ownerName}&petName=${record?.petName}&followupFor=${record?.followupFor}&followupDate=${record?.followupDate}`;
             navigate(url)
         } catch (error: any) { alert(error.toString()) }
         finally {
@@ -125,6 +158,8 @@ const ViewRecords = () => {
                     {renderRecord("Age", record.age, false)}
                     {renderRecord("history", record.history, true)}
                     {renderRecord("Treatment", record.treatment, false)}
+                    {renderRecord("Followup Date", record.followupDate ? moment(record.followupDate).format('DD MMM yyyy') : '-', true)}
+                    {renderRecord("Followup For", record.followupFor ? record.followupFor : '-', false)}
                     {renderRecord("Description", record.treatmentDescription, true)}
                     {renderRecord("Fees", (<><span>&#8377;</span> {record.fees}</>), false)}
                     {renderRecord("Paid Amount", (<><span>&#8377;</span>{` ${record.paidAmount}`}</>), true)}
@@ -154,6 +189,14 @@ const ViewRecords = () => {
                             isLoading={loadingCard}
                             onClick={handleViewCard}>
                             View Card
+                        </Button>
+
+                        <Button colorScheme='teal'
+                            size='md'
+                            w="30%"
+                            isLoading={loadingRatings}
+                            onClick={handleAskRatings}>
+                            Ask Ratings
                         </Button>
 
                         <Button colorScheme='teal'

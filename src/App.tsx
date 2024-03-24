@@ -10,7 +10,6 @@ import { AppContext } from './AppContext';
 import "./App.css";
 
 function App() {
-
   const [records, setRecords] = useState([])
   const [searchRecord, setSearchRecord] = useState({})
   const [totalEarnings, setTotalEarnings] = useState(0)
