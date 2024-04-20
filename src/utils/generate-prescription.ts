@@ -31,7 +31,7 @@ export function generatePrescription(record: any) {
                 sex: record.gender,
                 fileDate: moment(new Date(record.date)).format("DD-MMM-yyyy"),
                 date: moment(new Date(record.date)).format("DD MMM yyyy"),
-                followupDate: record.followupDate ? moment(new Date(record.followupDate)).format("DD MMM yyyy") : "",
+                followupDate: record.followupDate && record.followupDate !== '-' ? moment(new Date(record.followupDate)).format("DD MMM yyyy") : "",
                 historyObserved: record.history,
                 rxData: getRxData(record),
                 advice: record.treatmentDescription

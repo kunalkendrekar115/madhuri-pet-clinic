@@ -158,7 +158,7 @@ const ViewRecords = () => {
                     {renderRecord("Age", record.age, false)}
                     {renderRecord("history", record.history, true)}
                     {renderRecord("Treatment", record.treatment, false)}
-                    {renderRecord("Followup Date", record.followupDate ? moment(record.followupDate).format('DD MMM yyyy') : '-', true)}
+                    {renderRecord("Followup Date", record.followupDate && record.followupDate !== '-' ? moment(record.followupDate).format('DD MMM yyyy') : '-', true)}
                     {renderRecord("Followup For", record.followupFor ? record.followupFor : '-', false)}
                     {renderRecord("Description", record.treatmentDescription, true)}
                     {renderRecord("Fees", (<><span>&#8377;</span> {record.fees}</>), false)}

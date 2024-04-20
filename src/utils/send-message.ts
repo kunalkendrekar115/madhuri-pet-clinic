@@ -14,6 +14,41 @@ function getWhatsAppConfig(data: any) {
     return whatsappConfig
 }
 
+function getCardFields(type: any, ownerName: any, petName: any, followupFor: any, followupDate: any) {
+
+    return [{
+        "type": "text",
+        "text": ownerName
+    },
+    {
+        "type": "text",
+        "text": type
+    },
+    {
+        "type": "text",
+        "text": petName
+    },
+    {
+        "type": "text",
+        "text": followupFor
+    },
+    {
+        "type": "text",
+        "text": (followupDate !== 'NA' && followupDate !== '-') ? moment(new Date(followupDate)).format("DD MMM yyyy") : "NA"
+    }]
+}
+
+function getPrescriptionFields(ownerName: any, petName: any) {
+
+    return [{
+        "type": "text",
+        "text": ownerName
+    },
+    {
+        "type": "text",
+        "text": petName
+    }]
+}
 
 export function sendWhatsppMessage(pdfUrl: any, mobileNumber: any, ownerName: any, petName: any, type = "Prescription", followupFor = "NA", followupDate = "NA") {
 
@@ -25,7 +60,7 @@ export function sendWhatsppMessage(pdfUrl: any, mobileNumber: any, ownerName: an
                 "to": `91${mobileNumber}`,
                 "type": "template",
                 "template": {
-                    "name": "pet_clinic_card",
+                    "name": type === 'Prescription' ? "pet_clinic_prescription" : "pet_clinic_card",
                     "language": {
                         "code": "en"
                     },
@@ -44,28 +79,8 @@ export function sendWhatsppMessage(pdfUrl: any, mobileNumber: any, ownerName: an
                         },
                         {
                             "type": "BODY",
-                            "parameters": [
-                                {
-                                    "type": "text",
-                                    "text": ownerName
-                                },
-                                {
-                                    "type": "text",
-                                    "text": type
-                                },
-                                {
-                                    "type": "text",
-                                    "text": petName
-                                },
-                                {
-                                    "type": "text",
-                                    "text": followupFor
-                                },
-                                {
-                                    "type": "text",
-                                    "text": followupDate
-                                }
-                            ]
+                            "parameters": type === 'Prescription' ? getPrescriptionFields(ownerName, petName)
+                                : getCardFields(type, ownerName, petName, followupFor, followupDate)
                         }
                     ]
                 }
